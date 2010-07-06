@@ -1,0 +1,124 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Geolocation with Google Maps Demo | Odeon</title>
+    
+<style type="text/css">
+    #what-is-this{
+        margin: 50px 0;
+        text-align: center;
+    }
+    
+
+    #map{
+        width: 100%;
+        height: 500px;
+        position: relative;
+    }
+    
+    
+    #gotcha-at{
+        position: absolute;
+        width: 400px;
+        top: 250px;
+        right: 50px;
+        text-align: center;
+        background: white;
+        background-color: rgba(255, 255, 255, .85);
+        padding: 5px 20px;
+        border-radius: 5px;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        visibility: hidden;
+    }
+    
+</style>
+
+    
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false&key="></script>
+<script>
+var mapDiv;
+window.onload = function(){
+    mapDiv = document.getElementById('map');
+    mapDiv.innerHTML = 'Trying to get your location...';
+    if(navigator.geolocation)
+        navigator.geolocation.getCurrentPosition(handleGetCurrentPosition, handleGetCurrentPositionError);
+}
+
+
+function handleGetCurrentPosition(location){
+    
+    var position = new google.maps.LatLng(location.coords.latitude, location.coords.longitude)
+    
+    var map = new google.maps.Map(mapDiv, {
+        zoom: 16,
+        center: position,
+        mapTypeId: google.maps.MapTypeId.HYBRID
+    });
+    
+    var marker = new google.maps.Marker({
+        position: position,
+        map: map
+    })
+    
+    new google.maps.Geocoder().geocode({location: position}, handleGeocoderGetLocations);
+}
+
+
+function handleGeocoderGetLocations( addresses, status ){
+        if (status != google.maps.GeocoderStatus.OK)
+            return maybe_log( 'failed to talk to google' );
+            
+        var city = getCityFromPlacemarks(addresses);
+        var country = getCountryFromPlacemarks(addresses);
+        
+        var mapOverlay = document.getElementById('gotcha-at');
+        mapOverlay.innerHTML = 'Gotcha at <strong>' + addresses[0].formatted_address + '</strong>';
+        mapOverlay.style.visibility = 'visible';
+    }
+    
+    
+function getCityFromPlacemarks( placemarks ){
+    return extractNameFromGoogleGeocoderResults('locality', placemarks)
+}
+
+
+function getCountryFromPlacemarks(placemarks){
+    return extractNameFromGoogleGeocoderResults('country', placemarks)
+}
+
+
+function extractNameFromGoogleGeocoderResults(type, results){
+    for( var i = 0, l = results.length; i < l; i ++)
+        for(var j = 0, l2 = results[i].types.length; j < l2; j++ )
+            if( results[i].types[j] == type )
+                 return results[i].address_components[0].long_name;
+    return ''
+}
+    
+function handleGetCurrentPositionError(){
+    mapDiv.innerHTML = 'Something went horribly wrong!';
+}
+
+</script>
+
+    
+</head>
+<body>
+    
+    
+<div id="map"><noscript>
+    We need JS for this.
+</noscript></div>
+
+<div id="gotcha-at"></div>
+
+
+    <div id="what-is-this">
+        This is the demo file for the post <a class="demo-title" href="http://od-eon.com/labs/html5/geolocation/">Geolocation with Google Maps</a>.<br />
+        Copyright ©2010 <a href="http://od-eon.com">Odeon Consulting Group</a>.
+    </div>
+</body>
+</html>
